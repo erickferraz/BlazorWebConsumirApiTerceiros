@@ -1,0 +1,53 @@
+﻿@page "/cotacao"
+@using System.Globalization;
+@using BlazorWebConsumirApiTerceiros.Models;
+@using Newtonsoft.Json;
+
+<h3>Cotação Atual do Dólar</h3>
+
+<div class="col"><span class="fw-bold">Moeda: </span>@cotacao.name</div>
+<div class="text-star"><span class="fw-bold">Data: </span>@cotacao.create_date</div>
+<br />
+<br />
+<p class="text-start"><span class="fw-bold">Cotação Agora: </span>@cotacao.ask</p>
+<p><span class="fw-bold">Máxima: </span>@cotacao.high</p>
+<p><span class="fw-bold">Mínima: </span>@cotacao.low</p>
+
+<button @onclick="ObterCotacaoDolar" type="button" class="btn btn-primary mt-3">Atualizar</button>
+
+
+@code {
+    USDBRL cotacao = new USDBRL();
+
+    public DolarCotacao()
+    {
+    }
+
+    private async Task ObterCotacaoDolar()
+    {
+        string url = "https://economia.awesomeapi.com.br/json/last/USD-BRL";
+
+        using (var cliente = new HttpClient())
+        {
+            HttpResponseMessage resposta = await cliente.GetAsync(url);
+            string json = await resposta.Content.ReadAsStringAsync();
+
+            cotacao = JsonConvert.DeserializeObject<Dolar>(json).USDBRL;
+
+            //var value = Decimal.Parse(cotacao.ask, CultureInfo.CreateSpecificCulture("en-US"));
+            //cotacao.ask = value.ToString("N4");
+
+            cotacao.ask = Decimal.Parse(cotacao.ask, CultureInfo.CreateSpecificCulture("en-US")).ToString("N4");
+            cotacao.high = Decimal.Parse(cotacao.high, CultureInfo.CreateSpecificCulture("en-US")).ToString("N4");
+            cotacao.low = Decimal.Parse(cotacao.low, CultureInfo.CreateSpecificCulture("en-US")).ToString("N4");
+
+        }
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ObterCotacaoDolar();    
+    }
+
+}
